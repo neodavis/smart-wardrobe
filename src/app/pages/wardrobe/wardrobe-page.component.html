@@ -1,0 +1,15 @@
+<div class="container">
+  <app-weather-widget></app-weather-widget>
+
+  <button>+</button>
+  <input type="search" placeholder="Пошук за назвою">
+  <div>
+    @for (item of clothes$(); track item) {
+      <app-wardrobe-item></app-wardrobe-item>
+    } @empty {
+      Ваш гардероб на даний момент пустий.
+    }
+  </div>
+</div>
+
+
