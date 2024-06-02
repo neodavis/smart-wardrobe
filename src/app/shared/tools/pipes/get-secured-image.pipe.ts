@@ -1,13 +1,20 @@
-import { Pipe, PipeTransform } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { inject, Pipe, PipeTransform } from '@angular/core';
+import { map, Observable, of, tap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Pipe({
   name: 'getSecuredImage',
   standalone: true,
 })
 export class GetSecuredImagePipe implements PipeTransform {
-  transform(url: string): Observable<string> {
-    // TODO: implement adding of auth token to image query
-    return of('');
+  private _httpClient = inject(HttpClient);
+  private _sanitizer = inject(DomSanitizer);
+
+  transform(url: string): Observable<SafeUrl> {
+    return this._httpClient.get(url, { responseType: 'blob' })
+      .pipe(
+        map((image => this._sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(image)))),
+      )
   }
 }

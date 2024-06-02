@@ -7,8 +7,8 @@ import { WeatherService } from '../../services';
   selector: 'app-weather-widget',
   standalone: true,
   imports: [CommonModule],
-  providers: [WeatherService],
   templateUrl: './weather-widget.component.html',
+  styleUrl: './weather-widget.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeatherWidgetComponent {
