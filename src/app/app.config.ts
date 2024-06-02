@@ -3,7 +3,10 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { AuthenticatedUserGuard } from './shared/auth/guards';
+import { JwtInterceptor } from './shared/auth/interceptors';
+import { GuestUserGuard } from './shared/auth/guards/guest-user.guard';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -11,5 +14,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptorsFromDi()),
+    AuthenticatedUserGuard,
+    GuestUserGuard,
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ]
 };

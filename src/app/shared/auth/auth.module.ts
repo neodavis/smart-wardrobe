@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 
-import { JwtAuthGuard } from './guards';
+import { AuthenticatedUserGuard } from './guards';
 
 @NgModule({
   imports: [
@@ -12,7 +12,7 @@ import { JwtAuthGuard } from './guards';
     MatButtonModule,
   ],
   providers: [
-    JwtAuthGuard,
+    AuthenticatedUserGuard,
   ],
 })
 export class AuthModule {

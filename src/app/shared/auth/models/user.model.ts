@@ -1,5 +1,6 @@
 export interface User {
-  // TODO: align with BE after complete model
+  username: string;
+  email: string;
   id: number;
 }
 

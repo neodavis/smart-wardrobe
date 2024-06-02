@@ -3,7 +3,7 @@ import { Router, CanActivate } from '@angular/router';
 import { AuthService } from '../services';
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
+export class AuthenticatedUserGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {
   }
 
@@ -18,7 +18,7 @@ export class JwtAuthGuard implements CanActivate {
       }
     }
 
-    this.router.navigate(['/login']);
+    this.router.navigate(['/sign-in']);
     return false;
   }
 }

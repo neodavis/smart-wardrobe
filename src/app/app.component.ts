@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 import { HeaderComponent } from './pages';
@@ -9,8 +9,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule, HeaderComponent, RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
-  title = 'smart-wardrobe';
-}
+export class AppComponent { }
