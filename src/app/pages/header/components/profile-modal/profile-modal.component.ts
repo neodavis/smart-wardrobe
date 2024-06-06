@@ -9,6 +9,8 @@ import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Va
 import { UsersService } from '../../../../shared/users/services';
 import { filter, finalize, switchMap, take, tap } from 'rxjs';
 import { User } from '../../../../shared/auth/models';
+import { AuthService } from '../../../../shared/auth/services';
+import { Router } from '@angular/router';
 
 interface ProfileForm {
   id: FormControl<number>;
@@ -49,6 +51,8 @@ export class ProfileModalComponent {
     private usersService: UsersService,
     @Inject(MAT_DIALOG_DATA) private data: User,
     private dialogRef: MatDialogRef<ProfileModalComponent>,
+    private authService: AuthService,
+    private router: Router,
   ) { }
 
   onFileSelected(event: Event) {
@@ -68,6 +72,8 @@ export class ProfileModalComponent {
             this.dialogRef.close();
             this.usersService.loadClothesCollection();
             this.loading.set(false);
+            this.authService.logOut();
+            this.router.navigate(['sign-in'])
           }
         }),
         filter(() => !!this.profileForm.value.image),
@@ -75,6 +81,8 @@ export class ProfileModalComponent {
         finalize(() => {
           this.dialogRef.close();
           this.loading.set(false);
+          this.authService.logOut();
+          this.router.navigate(['sign-in'])
         }),
       )
       .subscribe()
