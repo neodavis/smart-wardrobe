@@ -1,6 +1,7 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { take, tap } from 'rxjs';
+import { AuthService } from '../../../shared/auth/services';
 
 interface WeatherData {
   app_temp: number;
@@ -56,16 +57,30 @@ interface CurrentWeatherApiResponse {
 @Injectable({ providedIn: 'root' })
 export class WeatherService {
   private _currentWeather$ = signal<WeatherData | null>(null);
+  private _doesLocationAllowed$ = signal<boolean>(true);
   private _httpClient = inject(HttpClient);
+  private _authService = inject(AuthService);
 
   get currentWeather$() {
     return this._currentWeather$.asReadonly();
   }
 
-  constructor() {
-    this.updateCurrentWeatherData();
+  get doesLocationAllowed$() {
+    return this._doesLocationAllowed$.asReadonly();
+  }
 
-    setInterval(() => this.updateCurrentWeatherData(), 60000)
+  constructor() {
+    effect(() => {
+      if (this._authService.isAuthenticated$()) {
+        this.updateCurrentWeatherData();
+      }
+    });
+
+    setInterval(() => {
+      if (this._authService.isAuthenticated$()) {
+        this.updateCurrentWeatherData();
+      }
+    }, 60000)
   }
 
   loadCurrentWeatherData(lat: number, lon: number) {
@@ -80,6 +95,7 @@ export class WeatherService {
   private updateCurrentWeatherData() {
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => this.loadCurrentWeatherData(coords.latitude, coords.longitude),
+      (() => this._doesLocationAllowed$.set(false))
     );
   }
 

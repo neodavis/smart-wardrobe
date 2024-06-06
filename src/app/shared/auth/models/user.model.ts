@@ -1,7 +1,9 @@
 export interface User {
   username: string;
   email: string;
+  imageUrl: string;
   id: number;
+  createdAt: number;
 }
 
 export interface UserCredentials {

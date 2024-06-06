@@ -1,21 +1,23 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
-import { ClothingItemResponse } from '../../models';
+import { ClothingItemResponse, RecommendedClothingItemResponse } from '../../models';
 import { HttpClient } from '@angular/common/http';
 import { Observable, take, tap } from 'rxjs';
 import { WeatherService } from '../../../pages/wardrobe/services';
 import { UserDto } from '../../models/user.model';
 import { User } from '../../auth/models';
 import { AuthService } from '../../auth/services';
+import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private _clothes$ = signal<ClothingItemResponse[]>([]);
-  private _recommendedClothes$ = signal<ClothingItemResponse[]>([]);
+  private _recommendedClothes$ = signal<RecommendedClothingItemResponse[]>([]);
   private _user$ = signal<User | null>(null);
 
   private _httpClient = inject(HttpClient);
   private _weatherService = inject(WeatherService);
   private _authService = inject(AuthService);
+  private _router = inject(Router);
 
   private basic = 'http://localhost:8080/users/self';
 
@@ -49,7 +51,15 @@ export class UsersService {
     this.getClothesCollection()
       .pipe(
         take(1),
-        tap((response) => this._clothes$.set(response)),
+        tap((response) => {
+          this._clothes$.set(response);
+          const currentWeather = this._weatherService.currentWeather$();
+
+          if (currentWeather) {
+            const { temp, wind_spd, precip } = currentWeather;
+            this.loadRecommendedClothesCollection({ temperature: temp, windSpeed: wind_spd, precipitation: precip })
+          }
+        }),
       )
       .subscribe()
   }
@@ -62,7 +72,7 @@ export class UsersService {
   }
 
   editUser(userDto: UserDto) {
-    return this._httpClient.put<UserDto>(this.basic, userDto);
+    return this._httpClient.patch<UserDto>(this.basic, userDto);
   }
 
   private loadRecommendedClothesCollection(weatherData: { temperature: number, windSpeed: number, precipitation: number }) {
@@ -75,7 +85,14 @@ export class UsersService {
   }
 
   private getRecommendedClothesCollection(weatherData: { temperature: number, windSpeed: number, precipitation: number }) {
-    return this._httpClient.get<ClothingItemResponse[]>(`${this.basic}/wardrobe/recommendation`);
+    return this._httpClient.get<RecommendedClothingItemResponse[]>(`${this.basic}/wardrobe/recommendation`, {
+      params: {
+        'temperature': weatherData.temperature,
+        'wind-speed': weatherData.windSpeed,
+        'precipitation': weatherData.precipitation,
+        'number': 5,
+      },
+    });
   }
 
   private getClothesCollection() {

@@ -7,6 +7,8 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@a
 import { AuthenticatedUserGuard } from './shared/auth/guards';
 import { JwtInterceptor } from './shared/auth/interceptors';
 import { GuestUserGuard } from './shared/auth/guards/guest-user.guard';
+import { NotificationInterceptor } from './shared/notification/interceptors';
+import { provideToastr } from 'ngx-toastr';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,6 +18,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     AuthenticatedUserGuard,
     GuestUserGuard,
+    provideToastr(),
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: NotificationInterceptor, multi: true },
   ]
 };

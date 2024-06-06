@@ -17,6 +17,11 @@ export interface ClothingItemResponse extends ClothingItemBaseDto {
   id: string;
 }
 
+export interface RecommendedClothingItemResponse {
+  percentage: number;
+  clothingItem: ClothingItemResponse;
+}
+
 export interface ClothingItem {
   name: string;
   warmth: number;

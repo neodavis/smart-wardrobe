@@ -18,7 +18,7 @@ export class WardrobeService {
   }
 
   editClothingItem(clothingItemDto: ClothingItemEditDto) {
-    return this._httpClient.patch<ClothingItemResponse>(this.basic, clothingItemDto);
+    return this._httpClient.patch<ClothingItemResponse>(`${this.basic}/${clothingItemDto.id}`, clothingItemDto);
   }
 
   saveItemPhoto(id: string, image: File) {

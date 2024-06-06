@@ -7,15 +7,19 @@ import { Router, RouterModule } from '@angular/router';
 import { UsersService } from '../../shared/users/services';
 import { MatDialog } from '@angular/material/dialog';
 import { ProfileModalComponent } from './components/profile-modal/profile-modal.component';
+import { GetSecuredImagePipe } from '../../shared/tools/pipes/get-secured-image.pipe';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [
+    CommonModule,
     RouterModule,
     MatMenuModule,
     MatToolbarModule,
     MatButtonModule,
+    GetSecuredImagePipe,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
