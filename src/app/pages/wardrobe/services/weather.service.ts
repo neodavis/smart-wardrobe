@@ -1,4 +1,4 @@
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { effect, Inject, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { take, tap } from 'rxjs';
 import { AuthService } from '../../../shared/auth/services';
@@ -69,7 +69,10 @@ export class WeatherService {
     return this._doesLocationAllowed$.asReadonly();
   }
 
-  constructor() {
+  constructor(
+    @Inject('WEATHER_API_PATH') private weatherApiPath: string,
+    @Inject('WEATHER_API_KEY') private weatherApiKey: string,
+  ) {
     effect(() => {
       if (this._authService.isAuthenticated$()) {
         this.updateCurrentWeatherData();
@@ -100,11 +103,11 @@ export class WeatherService {
   }
 
   private getCurrentWeather(lat: number, lon: number) {
-    return this._httpClient.get<CurrentWeatherApiResponse>('https://api.weatherbit.io/v2.0/current', {
+    return this._httpClient.get<CurrentWeatherApiResponse>(this.weatherApiPath, {
       params: {
         lat,
         lon,
-        key: '45b6c13f49294bb3912b58bad11628eb',
+        key: this.weatherApiKey,
         // TODO: write logic to get language dynamically
         lang: 'uk'
       }

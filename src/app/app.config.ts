@@ -9,6 +9,7 @@ import { JwtInterceptor } from './shared/auth/interceptors';
 import { GuestUserGuard } from './shared/auth/guards/guest-user.guard';
 import { NotificationInterceptor } from './shared/notification/interceptors';
 import { provideToastr } from 'ngx-toastr';
+import { environment } from './environment/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,5 +22,7 @@ export const appConfig: ApplicationConfig = {
     provideToastr(),
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: NotificationInterceptor, multi: true },
+    { provide: 'WEATHER_API_KEY', useValue: environment.WEATHER_API_KEY },
+    { provide: 'WEATHER_API_PATH', useValue: environment.WEATHER_API_PATH },
   ]
 };
