@@ -1,5 +1,5 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
-import { ClothingItemResponse, RecommendedClothingItemResponse } from '../../models';
+import { ClothingItemResponse, ClothingType, RecommendedClothingItemResponse, StyleType } from '../../models';
 import { HttpClient } from '@angular/common/http';
 import { Observable, take, tap } from 'rxjs';
 import { WeatherService } from '../../../pages/wardrobe/services';
@@ -13,6 +13,8 @@ export class UsersService {
   private _clothes$ = signal<ClothingItemResponse[]>([]);
   private _recommendedClothes$ = signal<RecommendedClothingItemResponse[]>([]);
   private _user$ = signal<User | null>(null);
+  private _styleTypeFilter$ = signal<StyleType[]>([]);
+  private _clothesTypeFilter$ = signal<ClothingType[]>([]);
 
   private _httpClient = inject(HttpClient);
   private _weatherService = inject(WeatherService);
@@ -37,6 +39,8 @@ export class UsersService {
     effect(() => this._authService.userId$() ? this.fetchUser() : this._user$.set(null), { allowSignalWrites: true });
 
     effect(() => {
+      this.loadClothesCollection();
+
       const currentWeather = this._weatherService.currentWeather$();
 
       if (currentWeather) {
@@ -44,22 +48,21 @@ export class UsersService {
         this.loadRecommendedClothesCollection({ temperature: temp, windSpeed: wind_spd, precipitation: precip })
       }
     });
+  }
 
+  updateStyleTypeFilter(filter: StyleType[]) {
+    this._styleTypeFilter$.set(filter);
+  }
+
+  updateClothesTypeFilter(filter: ClothingType[]) {
+    this._clothesTypeFilter$.set(filter);
   }
 
   loadClothesCollection() {
-    this.getClothesCollection()
+    this.getClothesCollection(this._clothesTypeFilter$(), this._styleTypeFilter$())
       .pipe(
         take(1),
-        tap((response) => {
-          this._clothes$.set(response);
-          const currentWeather = this._weatherService.currentWeather$();
-
-          if (currentWeather) {
-            const { temp, wind_spd, precip } = currentWeather;
-            this.loadRecommendedClothesCollection({ temperature: temp, windSpeed: wind_spd, precipitation: precip })
-          }
-        }),
+        tap((response) => this._clothes$.set(response)),
       )
       .subscribe()
   }
@@ -76,7 +79,7 @@ export class UsersService {
   }
 
   private loadRecommendedClothesCollection(weatherData: { temperature: number, windSpeed: number, precipitation: number }) {
-    this.getRecommendedClothesCollection(weatherData)
+    this.getRecommendedClothesCollection(weatherData, this._clothesTypeFilter$())
       .pipe(
         take(1),
         tap((response) => this._recommendedClothes$.set(response)),
@@ -84,9 +87,10 @@ export class UsersService {
       .subscribe()
   }
 
-  private getRecommendedClothesCollection(weatherData: { temperature: number, windSpeed: number, precipitation: number }) {
+  private getRecommendedClothesCollection(weatherData: { temperature: number, windSpeed: number, precipitation: number }, clothingTypes: ClothingType[]) {
     return this._httpClient.get<RecommendedClothingItemResponse[]>(`${this.basic}/wardrobe/recommendation`, {
       params: {
+        'clothingTypes': clothingTypes,
         'temperature': weatherData.temperature,
         'wind-speed': weatherData.windSpeed,
         'precipitation': weatherData.precipitation,
@@ -95,8 +99,8 @@ export class UsersService {
     });
   }
 
-  private getClothesCollection() {
-    return this._httpClient.get<ClothingItemResponse[]>(`${this.basic}/wardrobe`);
+  private getClothesCollection(clothingTypes: ClothingType[], styleTypes: StyleType[]) {
+    return this._httpClient.get<ClothingItemResponse[]>(`${this.basic}/wardrobe`, { params: { clothingTypes, styleTypes } });
   }
 
   private fetchUser() {

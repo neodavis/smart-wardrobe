@@ -4,18 +4,32 @@ import { WardrobeItemComponent, WeatherWidgetComponent, WardrobeItemModalCompone
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { UsersService } from '../../shared/users/services';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { WardrobeService, WeatherService } from './services';
-import { take, tap } from 'rxjs';
+import { startWith, take, tap } from 'rxjs';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { ClothingItemResponse, ClothingType, RecommendedClothingItemResponse } from '../../shared/models';
+import { ClothingItemResponse, ClothingType, RecommendedClothingItemResponse, StyleType } from '../../shared/models';
 import { KeyValuePipe } from '@angular/common';
 import { LocationNotAllowedComponent } from '../../shared/location-not-allowed/location-not-allowed.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-wardrobe',
   standalone: true,
-  imports: [WardrobeItemComponent, WeatherWidgetComponent, MatButtonModule, MatButtonModule, MatDialogModule, FormsModule, MatSlideToggle, KeyValuePipe, LocationNotAllowedComponent],
+  imports: [
+    WardrobeItemComponent,
+    WeatherWidgetComponent,
+    MatButtonModule,
+    MatDialogModule,
+    FormsModule,
+    MatSlideToggle,
+    KeyValuePipe,
+    LocationNotAllowedComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    ReactiveFormsModule,
+  ],
   templateUrl: './wardrobe-page.component.html',
   styleUrl: 'wardrobe-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,7 +49,11 @@ export class WardrobePageComponent implements OnInit {
   });
   recommendationMode$ = signal<boolean>(false);
   doesLocationAllowed$ = this.weatherService.doesLocationAllowed$;
+  styleTypeControl = new FormControl<StyleType[]>(Object.values(StyleType));
+  clothingTypeControl = new FormControl<ClothingType[]>(Object.values(ClothingType));
 
+  readonly ClothingType = ClothingType;
+  readonly StyleType = StyleType;
   readonly clothTypeLabel: Record<string, string> = {
     [ClothingType.BottomWear]: 'Нижній одяг',
     [ClothingType.FootWear]: 'Взуття',
@@ -54,6 +72,20 @@ export class WardrobePageComponent implements OnInit {
 
   ngOnInit() {
     this.usersService.loadClothesCollection();
+
+    this.clothingTypeControl.valueChanges
+      .pipe(
+        startWith(this.clothingTypeControl.value),
+        tap((value) => this.usersService.updateClothesTypeFilter(value!)),
+      )
+      .subscribe()
+
+    this.styleTypeControl.valueChanges
+      .pipe(
+        startWith(this.styleTypeControl.value),
+        tap((value) => this.usersService.updateStyleTypeFilter(value!)),
+      )
+      .subscribe()
   }
 
   openItemCreationModal() {
